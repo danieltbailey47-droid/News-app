@@ -1,3 +1,5 @@
+import os
+
 """
 Django settings for news_app project.
 
@@ -78,10 +80,10 @@ WSGI_APPLICATION = 'news_app.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'news_db',
-        'USER': 'newsuser',
-        'PASSWORD': 'newsapp123',
-        'HOST': 'localhost',
+        'NAME': os.environ.get('DATABASE_NAME', 'news_db'),
+        'USER': os.environ.get('DATABASE_USER', 'newsuser'),
+        'PASSWORD': os.environ.get('DATABASE_PASSWORD', 'newsapp123'),
+        'HOST': os.environ.get('DATABASE_HOST', 'db'),
         'PORT': '3306',
     }
 }

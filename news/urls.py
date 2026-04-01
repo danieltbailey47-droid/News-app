@@ -14,7 +14,7 @@ from .views import (
 )
 from .api_views import (
     SubscribedArticlesAPI, approved_article,
-    ArticleList, ArticleDetail, ArticleUpdate, ArticleDelete
+    ArticleListCreateAPI, ArticleDetailUpdateDeleteAPI,
 )
 
 urlpatterns = [
@@ -33,10 +33,8 @@ urlpatterns = [
     path('edit-article/<int:article_id>/', edit_article, name='edit_article'),
 
 
-    path('api/articles/', ArticleList.as_view()),
-    path('api/articles/<int:pk>/', ArticleDetail.as_view()),
-    path('api/articles/<int:pk>/update/', ArticleUpdate.as_view()),
-    path('api/articles/<int:pk>/delete/', ArticleDelete.as_view()),
+    path('api/articles/', ArticleListCreateAPI.as_view()),
+    path('api/articles/<int:pk>/', ArticleDetailUpdateDeleteAPI.as_view()),
     path('api/articles/subscribed/', SubscribedArticlesAPI.as_view()),
     path('api/approved/', approved_article),
 ]
