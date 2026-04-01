@@ -81,7 +81,7 @@ DATABASES = {
         'NAME': 'news_db',
         'USER': 'newsuser',
         'PASSWORD': 'newsapp123',
-        'HOST': 'localhost',
+        'HOST': 'db',
         'PORT': '3306',
     }
 }
