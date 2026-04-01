@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+
+    <h2>Articles</h2>
+
+    {% if articles %}
+        {% for article in articles %}
+        <div class="article-card">
+            <h3>{{ article.title }}</h3>
+            <div class="article-meta">
+                Author: {{ article.author.username }} | 
+                {% if article.publisher %}Publisher: {{ article.publisher.name }} | {% endif %}
+                Created: {{ article.created_at|date:"M d, Y H:i" }}
+            </div>
+            <p>{{ article.content }}</p>
+
+            <!-- Edit button for the author -->
+            {% if request.user == article.author %}
+                <a href="/articles/edit/{{ article.id }}/">
+                    <button>Edit Article</button>
+                </a>
+            {% endif %}
+
+            <!-- Subscribe/Unsubscribe button -->
+            {% if request.user != article.author %}
+                {% if article.author in request.user.subscribed_journalists.all %}
+                    <a href="/toggle-subscribe/{{ article.author.id }}/">
+                        <button>Unsubscribe from {{ article.author.username }}</button>
+                    </a>
+                {% else %}
+                    <a href="/toggle-subscribe/{{ article.author.id }}/">
+                        <button>Subscribe to {{ article.author.username }}</button>
+                    </a>
+                {% endif %}
+            {% endif %}
+
+        </div>
+        {% endfor %}
+    {% else %}
+        <p>No articles available.</p>
+    {% endif %}
+
+</div>
+{% endblock %}
