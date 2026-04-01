@@ -4,6 +4,7 @@ services:
   db:
     image: mariadb:11
     container_name: news_mariadb
+    restart: always
     environment:
       MYSQL_DATABASE: news_db
       MYSQL_USER: newsuser
@@ -25,7 +26,11 @@ services:
     depends_on:
       - db
     environment:
-      - DEBUG=True
+      DEBUG=True
+      DATABASE_HOST=db
+      DATABASE_NAME=news_db
+      DATABASE_USER=newsuser
+      DATABASE_PASSWORD=newsapp123
 
 volumes:
   db_data:
