@@ -65,7 +65,7 @@ DATABASES = {
         'NAME': os.environ.get('DATABASE_NAME', 'news_db'),
         'USER': os.environ.get('DATABASE_USER', 'newsuser'),
         'PASSWORD': os.environ.get('DATABASE_PASSWORD', 'newsapp123'),
-        'HOST': os.environ.get('DATABASE_HOST', 'db'),
+        'HOST': os.environ.get('DATABASE_HOST', 'localhost'),
         'PORT': '3306',
     }
 }
