@@ -10,8 +10,6 @@ services:
       MYSQL_USER: newsuser
       MYSQL_PASSWORD: newsapp123
       MYSQL_ROOT_PASSWORD: rootpassword
-    ports:
-      - "3306:3306"
     volumes:
       - db_data:/var/lib/mysql
 
@@ -26,11 +24,11 @@ services:
     depends_on:
       - db
     environment:
-      DEBUG=True
-      DATABASE_HOST=db
-      DATABASE_NAME=news_db
-      DATABASE_USER=newsuser
-      DATABASE_PASSWORD=newsapp123
+      DEBUG: "True"
+      DATABASE_HOST: db
+      DATABASE_NAME: news_db
+      DATABASE_USER: newsuser
+      DATABASE_PASSWORD: newsapp123
 
 volumes:
   db_data:
