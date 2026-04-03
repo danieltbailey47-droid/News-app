@@ -3,21 +3,28 @@
 {% block content %}
 <h2>Approve Articles</h2>
 
-{% for article in articles %}
-<div class="article-card">
-    <h3>{{ article.title }}</h3>
-    <p class="article-meta">By {{ article.author.username }} 
-        {% if article.publisher %} | Publisher: {{ article.publisher.name }}{% endif %}
-        | {{ article.created_at|date:"M d, Y H:i" }}
-    </p>
-    <p>{{ article.content }}</p>
-    <form method="post">
-        {% csrf_token %}
-        <input type="hidden" name="article_id" value="{{ article.id }}">
-        <button type="submit">Approve</button>
-    </form>
-</div>
-{% empty %}
-<p>No pending articles to approve.</p>
-{% endfor %}
+<form method="post">
+    {% csrf_token %}
+    <table>
+        <tr>
+            <th>Title</th>
+            <th>Author</th>
+            <th>Action</th>
+        </tr>
+        {% for article in articles %}
+        <tr>
+            <td>{{ article.title }}</td>
+            <td>{{ article.author.username }}</td>
+            <td>
+                <button type="submit" name="action" value="approve" formaction="?article_id={{ article.id }}">Approve</button>
+                <button type="submit" name="action" value="decline" formaction="?article_id={{ article.id }}">Decline</button>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="3">No articles to approve</td>
+        </tr>
+        {% endfor %}
+    </table>
+</form>
 {% endblock %}

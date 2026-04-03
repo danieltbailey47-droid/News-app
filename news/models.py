@@ -14,6 +14,7 @@ ROLE_Choice = (
     ('reader', 'Reader'),
     ('editor', 'Editor'),
     ('journalist', 'Journalist'),
+    ('publisher', 'Publisher')
 )
 
 
@@ -24,7 +25,9 @@ class Publisher(models.Model):
     Articles can optionally be associated with a publisher,
     and users can subscribe to publishers to receive their articles.
     """
-    name = models.CharField(max_length=225)
+    name = models.CharField(max_length=255, unique=True)
+    users = models.ManyToManyField('CustomUser', related_name='publishers')
+    description = models.TextField(blank=True)
 
     def __str__(self):
         return self.name
@@ -73,13 +76,18 @@ class Article(models.Model):
         Publisher,
         null=True,
         blank=True,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         related_name="articles"
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
 
     approved = models.BooleanField(default=False)
+
+    def save(self, *args, **kwargs):
+        if self.publisher is None:
+            self.approved = True
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.title

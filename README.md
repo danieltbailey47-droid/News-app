@@ -1,181 +1,242 @@
-News App
+# News App
 
+## Description
 
-## Description:
-    A Django-based news platform where users can register as Readers, Journalists, or Editors, create and approve articles, subscribe to journalists or publishers, and access a RESTful API for approved articles.
+A Django-based news platform where users can register as Readers, Journalists, or Editors, create and approve articles, subscribe to journalists or publishers, and access a RESTful API for approved articles.
 
-## Features:
-    - User registration and login with roles (Reader, Journalist, Editor)
-    - Journalists can create articles and assign publishers
-    - Editors can approve or decline articles
-    - Readers can view articles and subscribe to journalists or publishers
-    - REST API to fetch approved articles for third-party clients
-    - Email notifications for approved articles
-    - Responsive UI with a card-based layout
+---
+
+## Features
+
+* User registration and login with roles (Reader, Journalist, Editor)
+* Automatic login after successful registration
+* Form validation with user-friendly error messages (e.g., duplicate email)
+* Journalists can create articles and assign publishers or submit independently
+* Editors can approve or decline articles for publishers they are associated with
+* Independent articles are automatically approved
+* Readers can view articles and subscribe to journalists or publishers
+* Publishers can be created and associated with journalists and editors
+* REST API to fetch approved articles
+* Email notifications for approved articles
+* Responsive UI with a card-based layout
+
+---
 
 ## Requirements
+
 ### Software
-- Python 3.11+ (tested)
-- pip
-- MariaDB or MySQL
-- Git
+
+* Python 3.11+
+* pip
+* Git
+* Docker (optional, for containerized setup)
 
 ### Python Libraries
-- Django 4.2+
-- Django REST Framework
-- mysqlclient
-- requests
 
-## Installation Guide:
+All required libraries are listed in `requirements.txt`.
 
-### Step 1 — Clone the Repository:
+---
 
-    git clone <repo-url>
-    cd news_app
+## Installation Guide (Local Setup)
 
-### Step 2 — Create a Virtual Environment:
+### 1. Clone the Repository
 
-    python3 -m venv myenv
+```
+git clone <repo-url>
+cd news_app
+```
 
-    Activate the environment:
+### 2. Create and Activate a Virtual Environment
 
-    Mac / Linux
+```
+python3 -m venv venv
+```
 
-    source myenv/bin/activate
+**Mac / Linux**
 
-    Windows
+```
+source venv/bin/activate
+```
 
-    myenv\Scripts\activate
+**Windows**
 
-### Step 3 — Install Dependencies:
+```
+venv\Scripts\activate
+```
 
-    If a requirements file exists:
+### 3. Install Dependencies
 
-    pip install -r requirements.txt
+```
+pip install -r requirements.txt
+```
 
-    If installing manually:
+---
 
-    pip install django
+## Environment Setup
 
-    pip install djangorestframework
+This project uses environment variables for configuration.
 
-    pip install mysqlclient
+### 1. Create a `.env` file
 
-### Step 4 — Open the SQL Client:
+```
+cp .env.example .env
+```
 
-    mysql -u root -p
+### 2. Update values if needed
 
-    Enter your MySQL/MariaDB root password.
+```
+DATABASE_NAME=news_db
+DATABASE_USER=newsuser
+DATABASE_PASSWORD=newsapp123
+DATABASE_HOST=localhost
+DEBUG=True
+```
 
-### Step 5 — Create the Database:
+---
 
-    Inside the SQL client run:
+## Database Setup (Local Only)
 
-    CREATE DATABASE news_app_db;
+### 1. Open MySQL/MariaDB
 
-### Step 6 — Create a Database User:
+```
+mysql -u root -p
+```
 
-    CREATE USER 'news_user'@'localhost' IDENTIFIED BY 'yourpassword';
+### 2. Create Database
 
-### Step 7 — Grant Database Permissions:
+```
+CREATE DATABASE news_db;
+```
 
-    GRANT ALL PRIVILEGES ON news_app_db.* TO 'news_user'@'localhost';
-    FLUSH PRIVILEGES;
+### 3. Create User
 
-    Exit the SQL client:
-    EXIT;
+```
+CREATE USER 'newsuser'@'localhost' IDENTIFIED BY 'yourpassword';
+```
 
-## Configure Django Database:
+### 4. Grant Permissions
 
-    Open:
+```
+GRANT ALL PRIVILEGES ON news_db.* TO 'newsuser'@'localhost';
+FLUSH PRIVILEGES;
+```
 
-    news_app/settings.py
+---
 
-    Update the database configuration:
+## Apply Migrations
 
-    DATABASES = {
-    'default': {
-    'ENGINE': 'django.db.backends.mysql',
-    'NAME': 'news_app_db',
-    'USER': 'news_user',
-    'PASSWORD': 'yourpassword',
-    'HOST': 'localhost',
-    'PORT': '3306',
-    }
-    }
+```
+python manage.py migrate
+```
 
-## Apply Database Migrations
-    python manage.py migrate
+---
 
-## Create an Admin User:
-    python manage.py createsuperuser
+## Create Superuser
 
-    Follow the prompts to create the administrator account.
+```
+python manage.py createsuperuser
+```
 
-## Running the Application:
+---
 
-    Start the development server:
+## Run the Application
 
-    python manage.py runserver
+```
+python manage.py runserver
+```
 
-    Open a browser and navigate to:
+Open in browser:
 
-    http://127.0.0.1:8000/
+```
+http://127.0.0.1:8000/
+```
 
-## Running Unit Tests
+---
 
-    Run the project tests with:
+## Running with Docker
 
-    python3 manage.py test
+### 1. Build and start containers
 
-## Project File Structure:
-    news_app/
-    ├── news/
-    │   ├── migrations/
-    │   ├── templates/
-    │   │   ├── articles/
-    │   │   │   ├── article_list.html
-    │   │   │   ├── create_article.html
-    │   │   │   ├── approve_articles.html
-    │   │   │   ├── edit_article.html
-    │   │   │   └── subscribed_articles.html
-    │   │   ├── registration/
-    │   │   │   ├── login.html
-    │   │   │   ├── signup.html
-    │   │   │   └── dashboard.html
-    │   │   └── base.html
-    │   │
-    │   ├── static/
-    │   │   └── css/style.css
-    │   │
-    │   ├── models.py
-    │   ├── views.py
-    │   ├── urls.py
-    │   ├── serializers.py
-    │   └── tests.py
-    │
-    ├── manage.py
-    ├── requirements.txt
-    └── README.md
+```
+docker-compose up --build
+```
 
-## Technologies Used:
+### 2. Apply migrations (in a new terminal)
 
-    Backend:
+```
+docker-compose exec web python manage.py migrate
+```
 
-        Django
-        Django REST Framework
+### 3. Access the application
 
-    Database:
+```
+http://localhost:8000
+```
 
-        MariaDB / MySQL
+### 4. Stop containers
 
-    Frontend:
+```
+docker-compose down
+```
 
-        HTML
-        CSS
+---
 
-## Notes:
+## Running Tests
 
-    Users must include an email address during registration to receive article notifications.
-    Editors must approve articles before they appear publicly.
-    Readers can subscribe to journalists or publishers to receive updates.
+```
+python manage.py test
+```
+
+---
+
+## Project Structure
+
+```
+news_app/
+├── news/
+│   ├── migrations/
+│   ├── templates/
+│   ├── static/
+│   ├── models.py
+│   ├── views.py
+│   ├── urls.py
+│   ├── serializers.py
+│   └── tests.py
+├── docs/
+├── manage.py
+├── Dockerfile
+├── docker-compose.yml
+├── requirements.txt
+├── README.md
+└── .env.example
+```
+
+---
+
+## Technologies Used
+
+### Backend
+
+* Django
+* Django REST Framework
+
+### Database
+
+* MariaDB / MySQL
+
+### Frontend
+
+* HTML
+* CSS
+
+---
+
+## Notes
+
+* Users must include an email address during registration to receive notifications.
+* Editors approve articles before publication unless the article is independent.
+* Publishers manage associations with journalists and editors.
+* Environment variables are required for configuration and should not be hardcoded.
+* Sensitive data (e.g., passwords) should not be committed to version control.
+
+---

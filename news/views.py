@@ -12,6 +12,7 @@ from django.contrib.auth.decorators import login_required
 from .models import CustomUser, Article, Publisher
 from django.core.mail import send_mail
 from .forms import CustomUserCreationForm
+from django.db import IntegrityError
 
 
 def home(request):
@@ -23,22 +24,34 @@ def home(request):
 
 def signup(request):
     """
-    Handle user registration.
-
-    Displays a registration form and creates a new user
-    when valid data is submitted.
+    User registration with:
+    - Publisher registration
+    - Editors/Journalists associated with publishers
+    - Auto login after registration
     """
-
     if request.method == "POST":
         form = CustomUserCreationForm(request.POST)
-
         if form.is_valid():
-            form.save()
-            return redirect("login")
-
+            try:
+                user = form.save(commit=False)
+                role = form.cleaned_data.get("role")
+                if role in ["editor", "journalist"]:
+                    user.publisher = form.cleaned_data.get("publisher")
+                user.save()
+                login(request, user)
+                return redirect("/dashboard")
+            except IntegrityError:
+                return render(request, "registration/signup.html", {
+                    "form": form,
+                    "error": "A user with this email or username already exists."
+                })
+        else:
+            return render(request, "registration/signup.html", {
+                "form": form,
+                "error": "Please correct the errors below."
+            })
     else:
         form = CustomUserCreationForm()
-
     return render(request, "registration/signup.html", {"form": form})
 
 
@@ -85,12 +98,14 @@ def create_article(request):
     """
     Allow journalists to create new articles.
 
-    Articles are created with approved=False and must
-    be approved by an editor before publication.
+    Articles with no publisher are auto-approved.
+    Articles with a publisher require editor approval.
     """
 
     if request.user.role != "journalist":
         return render(request, "not_authorized.html")
+
+    publishers = Publisher.objects.filter(journalists=request.user)
 
     if request.method == "POST":
         title = request.POST.get("title")
@@ -99,24 +114,22 @@ def create_article(request):
 
         if not title or not content:
             return render(request, "articles/create_article.html", {
-                "error": "Title and content are required"
+                "error": "Title and content are required",
+                "publishers": publishers
             })
 
-        publisher = None
-        if publisher_id:
-            publisher = Publisher.objects.get(id=publisher_id)
+        publisher = get_object_or_404(Publisher, id=publisher_id) if publisher_id else None
+        approved = False if publisher else True
 
         Article.objects.create(
             title=title,
             content=content,
             author=request.user,
             publisher=publisher,
-            approved=False
+            approved=approved
         )
 
         return redirect("/dashboard")
-
-    publishers = Publisher.objects.all()
 
     return render(request, "articles/create_article.html", {
         "publishers": publishers
@@ -126,55 +139,28 @@ def create_article(request):
 @login_required
 def approve_articles(request):
     """
-    Allow editors to review pending articles.
-
-    Editors can approve or decline submitted articles.
-    Approved articles trigger email notifications to
-    subscribers.
+    Allows editors to approve or reject articles.
+    Only for articles from their associated publisher.
     """
-
     if request.user.role != "editor":
         return render(request, "not_authorized.html")
 
-    articles = Article.objects.filter(approved=False)
+    publisher = request.user.publisher
+    pending_articles = Article.objects.filter(publisher=publisher, approved=False)
 
     if request.method == "POST":
-        article_id = request.POST.get("article_id")
         action = request.POST.get("action")
-
-        article = get_object_or_404(Article, id=article_id)
+        article_id = request.POST.get("article_id")
+        article = Article.objects.get(id=article_id, publisher=publisher)
 
         if action == "approve":
             article.approved = True
-            article.save()
-
-            journalist_subscribers = article.author.subscribed_journalists.all()
-
-            publisher_subscribers = []
-            if article.publisher:
-                publisher_subscribers = article.publisher.subscribers.all()
-
-            subscribers = list(journalist_subscribers) + list(publisher_subscribers)
-
-            emails = [user.email for user in subscribers if user.email]
-
-            if emails:
-                send_mail(
-                    "New Article Published",
-                    f"{article.title} has been approved and published.",
-                    "admin@newsapp.com",
-                    emails,
-                    fail_silently=True,
-                )
-
         elif action == "decline":
-            article.delete()
+            article.approved = False
+        article.save()
+        return redirect("/approve_articles")
 
-        return redirect("/approve-articles/")
-
-    return render(request, "articles/approve_articles.html", {
-        "articles": articles
-    })
+    return render(request, "articles/approve_articles.html", {"articles": pending_articles})
 
 
 def logout_view(request):
@@ -261,3 +247,28 @@ def edit_article(request, article_id):
         return redirect("/dashboard")
 
     return render(request, "articles/edit_article.html", {"article": article})
+
+
+@login_required
+def publisher_dashboard(request):
+    """
+    Publisher dashboard:
+    - Shows pending articles for editors
+    - Shows associated editors and journalists
+    """
+
+    if request.user.role != "publisher":
+        return render(request, "not_authorized.html")
+
+    publisher = Publisher.objects.get(id=request.user.id)
+    editors = CustomUser.objects.filter(role="editor", publisher=publisher)
+    journalists = CustomUser.objects.filter(role="journalist", publisher=publisher)
+    articles = Article.objects.filter(publisher=publisher, approved=False)
+
+    context = {
+        "publisher": publisher,
+        "editors": editors,
+        "journalists": journalists,
+        "articles": articles,
+    }
+    return render(request, "publisher/dashboard.html", context)

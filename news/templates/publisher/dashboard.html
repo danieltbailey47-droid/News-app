@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Publisher Dashboard: {{ publisher.name }}</h2>
+
+<h3>Editors</h3>
+<ul>
+    {% for editor in editors %}
+    <li>{{ editor.username }}</li>
+    {% endfor %}
+</ul>
+
+<h3>Journalists</h3>
+<ul>
+    {% for journalist in journalists %}
+    <li>{{ journalist.username }}</li>
+    {% endfor %}
+</ul>
+
+<h3>Pending Articles</h3>
+<ul>
+    {% for article in articles %}
+    <li>{{ article.title }} by {{ article.author.username }}</li>
+    {% empty %}
+    <li>No pending articles</li>
+    {% endfor %}
+</ul>
+{% endblock %}
